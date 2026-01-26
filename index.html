@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Agricol | Optimizare Profit Anul 1</title>
+    <meta name="description"
+        content="Calculează profitul și economiile pentru primul an de activitate agricolă prin investiții inteligente în infrastructură și tehnologie.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculator Agricol</h1>
+            <p class="subtitle">Analiza Rentabilității pentru Primul An de Funcționare</p>
+        </header>
+
+        <main>
+            <section class="input-grid">
+                <div class="card input-card">
+                    <h2><span class="icon">🚜</span> Date Generale</h2>
+                    <div class="input-group">
+                        <label for="suprafata">Suprafață Lucrată (ha)</label>
+                        <input type="number" id="suprafata" placeholder="Ex: 100" min="0" step="1">
+                        <div class="error-msg" id="error-suprafata">Te rugăm să introduci o valoare validă.</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="productie">Producție Medie (t/ha)</label>
+                        <input type="number" id="productie" placeholder="Ex: 6" min="0" step="0.1">
+                        <div class="error-msg" id="error-productie">Te rugăm să introduci o valoare validă.</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="inputuri">Cheltuieli Inputuri (€/ha)</label>
+                        <input type="number" id="inputuri" placeholder="Ex: 200" min="0" step="1">
+                        <div class="error-msg" id="error-inputuri">Te rugăm să introduci o valoare validă.</div>
+                    </div>
+                </div>
+
+                <div class="card input-card">
+                    <h2><span class="icon">🏗️</span> Infrastructură & Tehnică</h2>
+                    <div class="input-group">
+                        <label for="hangar_mp">Suprafață Hangar (mp)</label>
+                        <input type="number" id="hangar_mp" placeholder="Ex: 1000" min="0" step="1">
+                        <div class="error-msg" id="error-hangar_mp">Te rugăm să introduci o valoare validă.</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="hangar_pret_mp">Preț Hangar (€/mp)</label>
+                        <input type="number" id="hangar_pret_mp" placeholder="Ex: 160" min="0" step="1">
+                        <div class="error-msg" id="error-hangar_pret_mp">Te rugăm să introduci o valoare validă.</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="utilaj_nou">Preț Utilaj Nou (€)</label>
+                        <input type="number" id="utilaj_nou" placeholder="Ex: 100000" min="0" step="1">
+                        <div class="error-msg" id="error-utilaj_nou">Te rugăm să introduci o valoare validă.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="results-grid">
+                <div class="card result-card" id="card-hangar">
+                    <h3>Hangar (Stocare & ROI)</h3>
+                    <div class="res-item">
+                        <span>Capacitate Stocare:</span>
+                        <strong id="res-capacitate">0 tone</strong>
+                    </div>
+                    <div class="res-item">
+                        <span>Cost Hangar:</span>
+                        <strong id="res-cost-hangar">0 €</strong>
+                    </div>
+
+                    <div class="roi-scenarios">
+                        <div class="scenario">
+                            <span class="label">Scenariu A (+0.50 MDL/kg)</span>
+                            <strong id="res-roi-a">0 MDL</strong>
+                        </div>
+                        <div class="scenario">
+                            <span class="label">Scenariu B (+1.00 MDL/kg)</span>
+                            <strong id="res-roi-b">0 MDL</strong>
+                        </div>
+                    </div>
+
+                    <div class="persuasive-message" id="hangar-message">
+                        <!-- Mesajul dinamic va fi injectat aici -->
+                    </div>
+
+                    <div class="res-item small-info">
+                        <span>Amortizare (din profit preț):</span>
+                        <strong id="res-amortizare">0 ani</strong>
+                    </div>
+                </div>
+
+                <div class="card result-card" id="card-gps">
+                    <h3>GPS RTK (Eficiență)</h3>
+                    <div class="res-item">
+                        <span>Economie Suprapunere (10%):</span>
+                        <strong id="res-economie-gps">0 €</strong>
+                    </div>
+                    <p class="info-text">Calculat din total cheltuieli inputuri.</p>
+                </div>
+
+                <div class="card result-card" id="card-demo">
+                    <h3>Tehnică Demo</h3>
+                    <div class="res-item">
+                        <span>Preț Tehnică Demo:</span>
+                        <strong id="res-pret-demo">0 €</strong>
+                    </div>
+                    <div class="res-item accent">
+                        <span>Economie Achiziție:</span>
+                        <strong id="res-economie-demo">0 €</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="final-summary">
+                <div class="total-revenue">
+                    <h4>Volum Total Recoltă</h4>
+                    <p id="res-volum-total">0 kg</p>
+                </div>
+                <div class="total-profit-card">
+                    <h4>Câștig Total Primul An</h4>
+                    <p id="res-profit-total">0 €</p>
+                    <small>Include economiile din GPS, Demo și profitul din evoluția prețului.</small>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Calculator Agricol Inteligent. Toate drepturile rezervate.</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
