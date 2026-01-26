@@ -31,7 +31,26 @@
             <!-- 1. Date Generale & Inputuri -->
             <section class="input-sections">
                 <div class="card input-card">
-                    <h2><span class="icon">🚜</span> Baza Fermei</h2>
+                    <h2><span class="icon">🚜</span> Setări Regionale</h2>
+
+                    <div class="flex-inputs">
+                        <div class="input-group">
+                            <label for="zona_agricola">Zona Agricolă</label>
+                            <select id="zona_agricola">
+                                <option value="nord">Nord</option>
+                                <option value="centru">Centru</option>
+                                <option value="sud">Sud</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="tip_cultura">Tip Cultură</label>
+                            <select id="tip_cultura">
+                                <option value="grau">Grâu</option>
+                                <option value="porumb">Porumb</option>
+                                <option value="floare">Floarea Soarelui</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="input-row">
                         <div class="input-group">
@@ -42,7 +61,7 @@
 
                     <div class="input-row">
                         <div class="input-group">
-                            <label for="productie">Producție Medie: <span id="val-productie">6.0</span> t/ha</label>
+                            <label for="productie">Randament: <span id="val-productie">6.0</span> t/ha</label>
                             <input type="range" id="productie" min="1" max="15" value="6" step="0.1" class="slider">
                         </div>
                     </div>
@@ -57,38 +76,34 @@
                 </div>
 
                 <div class="card input-card">
-                    <h2><span class="icon">🏗️</span> Hangar & Inputuri</h2>
+                    <h2><span class="icon">🏗️</span> Hangar & Arbitraj</h2>
                     <div class="input-group">
                         <label for="hangar_mp">Suprafață Hangar: <span id="val-hangar_mp">1000</span> mp</label>
                         <input type="range" id="hangar_mp" min="500" max="5000" value="1000" step="100" class="slider">
                     </div>
 
                     <div class="flex-inputs">
-                        <div class="input-group mini">
+                        <div class="input-group">
                             <label for="ingrasamant_kg_ha">Îngrășământ (kg/ha)</label>
                             <input type="number" id="ingrasamant_kg_ha" value="200" min="0">
                         </div>
-                        <div class="input-group mini">
-                            <label for="pret_sezon">Preț Sezon (€/t)</label>
-                            <input type="number" id="pret_sezon" value="600" min="0">
-                        </div>
-                        <div class="input-group mini">
-                            <label for="pret_extrasezon">Preț Iarnă (€/t)</label>
-                            <input type="number" id="pret_extrasezon" value="450" min="0">
+                        <div class="input-group">
+                            <label>Arbitraj Stocare</label>
+                            <div class="static-val">2.500 MDL/t</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card input-card">
-                    <h2><span class="icon">📡</span> Tehnologie Precision</h2>
+                    <h2><span class="icon">⛽</span> Eficiență Motorină</h2>
                     <div class="flex-inputs">
-                        <div class="input-group">
-                            <label for="diesel_cons">Consum Diesel (L/ha)</label>
-                            <input type="number" id="diesel_cons" value="80" min="0">
-                        </div>
                         <div class="input-group">
                             <label for="diesel_price">Preț Diesel (€/L)</label>
                             <input type="number" id="diesel_price" value="1.1" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Economie 15L/ha</label>
+                            <div class="static-val">Tehnologie 2022</div>
                         </div>
                     </div>
                     <div class="input-group">
@@ -98,10 +113,13 @@
                 </div>
             </section>
 
-            <!-- 2. Analiză ROI & Scenarii -->
+            <!-- 2. Analiză ROI & Eficiență -->
             <section class="analysis-grid">
                 <div class="card analysis-card">
-                    <h3>Impact Depozitare (ROI Hangar)</h3>
+                    <div class="card-header-flex">
+                        <h3>Performanță Depozitare</h3>
+                        <div id="farm-efficiency-score" class="score-badge">Scor: 0</div>
+                    </div>
                     <div class="scenario-toggle">
                         <button class="toggle-btn active" data-mdl="0.5">Scenariu +0.50 MDL</button>
                         <button class="toggle-btn" data-mdl="1.0">Scenariu +1.00 MDL</button>
@@ -109,36 +127,44 @@
 
                     <div class="res-list">
                         <div class="res-item">
-                            <span>Cost Investiție (Net):</span>
-                            <strong id="res-inv-hangar">0 €</strong>
-                        </div>
-                        <div class="res-item accent">
                             <span>Profit Stocare:</span>
                             <strong id="res-profit-stocare">0 MDL</strong>
                         </div>
+                        <div class="res-item accent">
+                            <span>Arbitraj Inputuri:</span>
+                            <strong id="res-eco-arbitraj">0 MDL</strong>
+                        </div>
                         <div class="res-item danger">
-                            <span>Cost Degradare (Beton Vechi):</span>
+                            <span>Cost Degradare (5%):</span>
                             <strong id="res-degradare">0 €</strong>
                         </div>
                     </div>
                 </div>
 
                 <div class="card analysis-card">
-                    <h3>Economii Operaționale</h3>
+                    <h3>Economii Tehnologice</h3>
                     <div class="res-list">
                         <div class="res-item">
-                            <span>Economie Îngrășăminte:</span>
-                            <strong id="res-eco-fertilizer">0 €</strong>
-                        </div>
-                        <div class="res-item">
-                            <span>Economie Motorină RTK:</span>
+                            <span>Economie Motorină:</span>
                             <strong id="res-eco-diesel">0 €</strong>
                         </div>
+                        <div class="res-item">
+                            <span>Economie RTK (10%):</span>
+                            <strong id="res-eco-gps">0 €</strong>
+                        </div>
                         <div class="res-item accent">
-                            <span>Economie Achiziție Demo:</span>
+                            <span>Economie Achiziție:</span>
                             <strong id="res-eco-demo">0 €</strong>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- 4. Concluzii Speciale Sectoriale -->
+            <section class="special-conclusions card">
+                <h3>Analiză de Oportunitate</h3>
+                <div id="conclusions-container" class="conclusions-grid">
+                    <!-- Text dinamice injectate aici -->
                 </div>
             </section>
 
