@@ -1,175 +1,158 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Input elements
-    const inputs = {
+    // 1. DOM Elements
+    const elements = {
+        // Inputs
         suprafata: document.getElementById('suprafata'),
         productie: document.getElementById('productie'),
-        inputuri: document.getElementById('inputuri'),
+        aipa: document.getElementById('aipa_subventie'),
         hangar_mp: document.getElementById('hangar_mp'),
-        hangar_pret_mp: document.getElementById('hangar_pret_mp'),
-        utilaj_nou: document.getElementById('utilaj_nou')
+        hangar_pret_mp: { value: 160 }, // Fixed base but can be extended
+        ingrasamant_kg_ha: document.getElementById('ingrasamant_kg_ha'),
+        pret_sezon: document.getElementById('pret_sezon'),
+        pret_extrasezon: document.getElementById('pret_extrasezon'),
+        diesel_cons: document.getElementById('diesel_cons'),
+        diesel_price: document.getElementById('diesel_price'),
+        utilaj_nou: document.getElementById('utilaj_nou'),
+
+        // Display Values (Labels)
+        val_suprafata: document.getElementById('val-suprafata'),
+        val_productie: document.getElementById('val-productie'),
+        val_hangar_mp: document.getElementById('val-hangar_mp'),
+
+        // Results
+        res_inv_hangar: document.getElementById('res-inv-hangar'),
+        res_profit_stocare: document.getElementById('res-profit-stocare'),
+        res_degradare: document.getElementById('res-degradare'),
+        res_eco_fertilizer: document.getElementById('res-eco-fertilizer'),
+        res_eco_diesel: document.getElementById('res-eco-diesel'),
+        res_eco_demo: document.getElementById('res-eco-demo'),
+        res_total_savings: document.getElementById('res-total-savings'),
+        res_payback: document.getElementById('res-payback'),
+        summary_text: document.getElementById('summary-text'),
+
+        // Controls
+        btn_export: document.getElementById('btn-export-pdf'),
+        toggle_btns: document.querySelectorAll('.toggle-btn')
     };
 
-    // Result elements
-    const results = {
-        capacitate: document.getElementById('res-capacitate'),
-        costHangar: document.getElementById('res-cost-hangar'),
-        roiA: document.getElementById('res-roi-a'),
-        roiB: document.getElementById('res-roi-b'),
-        hangarMessage: document.getElementById('hangar-message'),
-        amortizare: document.getElementById('res-amortizare'),
-        economieGps: document.getElementById('res-economie-gps'),
-        pretDemo: document.getElementById('res-pret-demo'),
-        economieDemo: document.getElementById('res-economie-demo'),
-        volumTotal: document.getElementById('res-volum-total'),
-        profitTotal: document.getElementById('res-profit-total')
-    };
+    let scenarioMDL = 0.5; // Default scenario
 
-    /**
-     * Formats a number as currency or fixed decimals
-     * @param {number} value 
-     * @param {string} suffix 
-     */
-    const formatValue = (value, suffix = '€') => {
-        return new Intl.NumberFormat('ro-RO').format(Math.round(value)) + ' ' + suffix;
-    };
+    // 2. Helper Functions
+    const formatEUR = (val) => new Intl.NumberFormat('ro-RO', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
+    const formatMDL = (val) => new Intl.NumberFormat('ro-RO').format(Math.round(val)) + ' MDL';
+    const MDL_TO_EUR = 1 / 19.23;
 
-    /**
-     * Formats a number for MDL currency
-     */
-    const formatMDL = (value) => {
-        return new Intl.NumberFormat('ro-RO').format(Math.round(value)) + ' MDL';
-    };
-
-    /**
-     * Validates an input and shows/hides error message
-     * @param {string} id 
-     * @param {number} value 
-     */
-    const validateInput = (id, value) => {
-        const errorEl = document.getElementById(`error-${id}`);
-        if (value < 0 || isNaN(value)) {
-            errorEl.style.display = 'block';
-            return false;
-        }
-        errorEl.style.display = 'none';
-        return true;
-    };
-
-    /**
-     * Main calculation function
-     */
+    // 3. Calculation Engine
     const calculate = () => {
-        const data = {
-            suprafata: parseFloat(inputs.suprafata.value) || 0,
-            productie: parseFloat(inputs.productie.value) || 0,
-            inputuri: parseFloat(inputs.inputuri.value) || 0,
-            hangar_mp: parseFloat(inputs.hangar_mp.value) || 0,
-            hangar_pret_mp: parseFloat(inputs.hangar_pret_mp.value) || 160,
-            utilaj_nou: parseFloat(inputs.utilaj_nou.value) || 0
-        };
+        // Raw Data
+        const area = parseFloat(elements.suprafata.value);
+        const yieldPerHa = parseFloat(elements.productie.value);
+        const hangarMp = parseFloat(elements.hangar_mp.value);
+        const applyAIPA = elements.aipa.checked;
 
-        // Validate all
-        let allValid = true;
-        Object.keys(data).forEach(key => {
-            if (!validateInput(key, data[key])) allValid = false;
-        });
+        // Update Labels
+        elements.val_suprafata.textContent = area;
+        elements.val_productie.textContent = yieldPerHa.toFixed(1);
+        elements.val_hangar_mp.textContent = hangarMp;
 
-        if (!allValid) return;
+        // --- Module 1: Investment Costs ---
+        const baseHangarCost = hangarMp * 160;
+        const netHangarCost = applyAIPA ? baseHangarCost * 0.5 : baseHangarCost;
+        elements.res_inv_hangar.textContent = formatEUR(netHangarCost);
 
-        // 1. General Results
-        const volumTotalTone = data.suprafata * data.productie;
-        const volumTotalKg = volumTotalTone * 1000;
-        results.volumTotal.textContent = formatValue(volumTotalKg, 'kg');
+        // --- Module 2: Storage & Quality (ROI) ---
+        const totalYieldTones = area * yieldPerHa;
+        const hangarCapacity = hangarMp * 2.5;
+        const storedTones = Math.min(totalYieldTones, hangarCapacity);
+        const profitMDL = (storedTones * 1000) * scenarioMDL;
 
-        // 2. Hangar Calculations (ROI focus)
-        const costHangarEUR = data.hangar_mp * data.hangar_pret_mp;
-        const capacitateTone = data.hangar_mp * 2.5; // spec: 1000mp = 2500t
+        // Quality Factor (5% degradation on old concrete storage)
+        const degradationCostEUR = (storedTones * 300) * 0.05; // Assuming 300 EUR/t value
 
-        // Use either the total yield or the specific hangar capacity for storage ROI
-        const toneStocabile = Math.min(volumTotalTone, capacitateTone);
-        const kgStocabile = toneStocabile * 1000;
+        elements.res_profit_stocare.textContent = formatMDL(profitMDL);
+        elements.res_degradare.textContent = formatEUR(degradationCostEUR);
 
-        const profitScenariuA_MDL = kgStocabile * 0.50;
-        const profitScenariuB_MDL = kgStocabile * 1.00;
+        // --- Module 3: Fertilizer Economy ---
+        const fertKgPerHa = parseFloat(elements.ingrasamant_kg_ha.value);
+        const priceSeason = parseFloat(elements.pret_sezon.value);
+        const priceOffSeason = parseFloat(elements.pret_extrasezon.value);
+        const fertEconomy = (priceSeason - priceOffSeason) * (area * fertKgPerHa / 1000);
+        elements.res_eco_fertilizer.textContent = formatEUR(fertEconomy);
 
-        // Conversion Rate derivation: 1.25M MDL = 65k EUR -> 1 EUR = 19.23 MDL
-        const MDL_TO_EUR = 1 / 19.23;
-        const profitScenariuB_EUR = profitScenariuB_MDL * MDL_TO_EUR;
-        const procentAcoperit = costHangarEUR > 0 ? (profitScenariuB_EUR / costHangarEUR * 100).toFixed(0) : 0;
+        // --- Module 4: GPS & Diesel ---
+        const dCons = parseFloat(elements.diesel_cons.value);
+        const dPrice = parseFloat(elements.diesel_price.value);
+        const dieselSaving = area * 5 * dPrice; // 5L saved per ha average
+        // Also 10% saving on seeds/fert via overlap elimination
+        const totalInputsCost = (area * 200) + (area * (fertKgPerHa * priceSeason / 1000));
+        const gpsInputSaving = totalInputsCost * 0.10;
+        const totalPrecisionSaving = dieselSaving + gpsInputSaving;
+        elements.res_eco_diesel.textContent = formatEUR(totalPrecisionSaving);
 
-        results.capacitate.textContent = formatValue(capacitateTone, 'tone');
-        results.costHangar.textContent = formatValue(costHangarEUR);
-        results.roiA.textContent = formatMDL(profitScenariuA_MDL);
-        results.roiB.textContent = formatMDL(profitScenariuB_MDL);
+        // --- Module 5: Demo vs New ---
+        const priceNew = parseFloat(elements.utilaj_nou.value);
+        const priceDemo = priceNew * 0.75;
+        const demoSaving = priceNew - priceDemo;
+        const netDemoInvestment = applyAIPA ? priceDemo * 0.5 : priceDemo;
+        elements.res_eco_demo.textContent = formatEUR(demoSaving);
 
-        // Dynamic Persuasive Message
-        if (kgStocabile > 0) {
-            results.hangarMessage.innerHTML = `
-                Domnule fermier, la recolta dumneavoastră de <strong>${formatValue(toneStocabile, 'tone')}</strong>, 
-                dacă aveți depozit propriu și așteptați o creștere de doar <strong>1 leu</strong> la kilogram, 
-                câștigați extra <strong>${formatMDL(profitScenariuB_MDL)}</strong>. 
-                Practic, din acest profit, plătiți aproape <strong>${procentAcoperit}%</strong> din costul hangarului într-un singur sezon. 
-                De anul viitor, toți acești bani rămân curat în buzunarul dumneavoastră.
-            `;
-            results.hangarMessage.style.display = 'block';
-        } else {
-            results.hangarMessage.style.display = 'none';
-        }
+        // --- Final Integration (B2B Report) ---
+        const annualStorageProfitEUR = profitMDL * MDL_TO_EUR;
+        const totalAnnualSaving = annualStorageProfitEUR + fertEconomy + totalPrecisionSaving + degradationCostEUR;
 
-        // Amortization (Scenario B base: 1 MDL/kg)
-        if (profitScenariuB_EUR > 0) {
-            const aniZecimal = costHangarEUR / profitScenariuB_EUR;
-            const aniIntregi = Math.floor(aniZecimal);
-            const luniRest = Math.round((aniZecimal - aniIntregi) * 12);
+        elements.res_total_savings.textContent = formatEUR(totalAnnualSaving);
 
-            let amortizareText = "";
-            if (aniIntregi > 0) amortizareText += `${aniIntregi} ${aniIntregi === 1 ? 'an' : 'ani'}`;
-            if (luniRest > 0) {
-                if (amortizareText) amortizareText += " și ";
-                amortizareText += `${luniRest} ${luniRest === 1 ? 'lună' : 'luni'}`;
-            }
-            if (!amortizareText) amortizareText = "0 luni";
+        // Payback Calculation
+        const totalInvestment = netHangarCost + (netDemoInvestment || 0);
+        const paybackSeasons = totalAnnualSaving > 0 ? (totalInvestment / totalAnnualSaving).toFixed(1) : 0;
+        elements.res_payback.textContent = paybackSeasons + ' Sezoane';
 
-            results.amortizare.textContent = amortizareText;
-        } else {
-            results.amortizare.textContent = "0 ani";
-        }
-
-        // 3. GPS RTK Efficiency
-        const cheltuieliInputuriTotal = data.suprafata * 200;
-        const economieGps = cheltuieliInputuriTotal * 0.10;
-        results.economieGps.textContent = formatValue(economieGps);
-
-        // 4. Demo Technique
-        const pretDemo = data.utilaj_nou * 0.75;
-        const economieAchizitie = data.utilaj_nou - pretDemo;
-        results.pretDemo.textContent = formatValue(pretDemo);
-        results.economieDemo.textContent = formatValue(economieAchizitie);
-
-        // 5. Final Total Profit Year 1
-        const castigTotalAnul1 = profitScenariuB_EUR + economieGps + economieAchizitie;
-        results.profitTotal.textContent = formatValue(castigTotalAnul1);
-
-        // Animation update
-        animateValue(results.profitTotal, castigTotalAnul1);
+        // Executive Narrative
+        elements.summary_text.innerHTML = `
+            Domnule fermier, prin investițiile propuse, ferma dumneavoastră de <strong>${area} ha</strong> 
+            va genera o economie operațională de <strong>${formatEUR(totalAnnualSaving)}</strong> anual. 
+            Doar din diferența de preț la îngrășăminte achiziționate iarna, salvați <strong>${formatEUR(fertEconomy)}</strong>, 
+            sumă care acoperă o parte semnificativă din costurile fixe. 
+            Investiția totală<sup>*</sup> se recuperează complet în doar <strong>${paybackSeasons} sezoane</strong>, 
+            după care profitul rămâne integral în fermă.
+        `;
     };
 
-    /**
-     * Simple numeric animation
-     */
-    const animateValue = (element, target) => {
-        if (target === 0) return;
-        element.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-            element.style.transform = 'scale(1)';
-        }, 200);
-    };
-
-    // Add event listeners to all inputs
-    Object.values(inputs).forEach(input => {
-        input.addEventListener('input', calculate);
+    // 4. Event Listeners
+    [elements.suprafata, elements.productie, elements.hangar_mp, elements.aipa,
+    elements.ingrasamant_kg_ha, elements.pret_sezon, elements.pret_extrasezon,
+    elements.diesel_cons, elements.diesel_price, elements.utilaj_nou].forEach(el => {
+        el.addEventListener('input', calculate);
     });
 
-    // Initial calculation
+    elements.toggle_btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            elements.toggle_btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            scenarioMDL = parseFloat(btn.dataset.mdl);
+            calculate();
+        });
+    });
+
+    // 5. PDF Export
+    elements.btn_export.addEventListener('click', () => {
+        const content = document.getElementById('calculator-content');
+        const opt = {
+            margin: 0.5,
+            filename: 'Raport_ROI_AgroSoyuz.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // Hide buttons for PDF
+        elements.btn_export.style.display = 'none';
+
+        html2pdf().set(opt).from(content).save().then(() => {
+            elements.btn_export.style.display = 'block';
+        });
+    });
+
+    // Initial run
     calculate();
 });
