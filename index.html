@@ -129,11 +129,11 @@
 
                     <div class="flex-inputs">
                         <div class="input-group">
-                            <label for="ingrasamant_kg_ha">Îngrășământ (kg/ha)</label>
+                            <label for="ingrasamant_kg_ha">Cheltuieli Semințe/Îngrășăminte (kg/ha)</label>
                             <input type="number" id="ingrasamant_kg_ha" value="200" min="0">
                         </div>
                         <div class="input-group">
-                            <label>Arbitraj Stocare</label>
+                            <label>Avantaj Depozitare</label>
                             <div class="static-val">2.500 MDL/t</div>
                         </div>
                     </div>
@@ -167,32 +167,32 @@
             <section class="analysis-grid">
                 <div class="card analysis-card">
                     <div class="card-header-flex">
-                        <h3>Performanță Depozitare</h3>
-                        <div id="farm-efficiency-score" class="score-badge">Scor: 0</div>
+                        <h3>Câștig din Depozitare</h3>
+                        <div id="farm-efficiency-score" class="score-badge">Scor Eficiență: 0</div>
                     </div>
                     <div class="scenario-toggle">
-                        <button class="toggle-btn active" data-mdl="0.5">Scenariu +0.50 MDL</button>
-                        <button class="toggle-btn" data-mdl="1.0">Scenariu +1.00 MDL</button>
+                        <button class="toggle-btn active" data-mdl="0.5">Vindem cu +0.50 MDL/kg</button>
+                        <button class="toggle-btn" data-mdl="1.0">Vindem cu +1.00 MDL/kg</button>
                     </div>
 
                     <div class="res-list">
                         <div class="res-item">
-                            <span>Profit Stocare:</span>
+                            <span>Bani în plus din vânzare:</span>
                             <strong id="res-profit-stocare">0 MDL</strong>
                         </div>
                         <div class="res-item accent">
-                            <span>Arbitraj Inputuri:</span>
+                            <span>Câștig la achiziție (Semințe, Îngrășăminte):</span>
                             <strong id="res-eco-arbitraj">0 MDL</strong>
                         </div>
                         <div class="res-item danger">
-                            <span>Cost Degradare (5%):</span>
+                            <span>Pierderi dacă nu ai depozit (5%):</span>
                             <strong id="res-degradare">0 €</strong>
                         </div>
                     </div>
                 </div>
 
                 <div class="card analysis-card">
-                    <h3>Economii Tehnologice</h3>
+                    <h3>Economii din Tehnologie Nouă</h3>
                     <div class="res-list">
                         <div class="res-item">
                             <span>Economie Motorină:</span>
@@ -203,7 +203,7 @@
                             <strong id="res-eco-gps">0 €</strong>
                         </div>
                         <div class="res-item accent">
-                            <span>Economie Achiziție:</span>
+                            <span>Economie Achiziție Utilaj:</span>
                             <strong id="res-eco-demo">0 €</strong>
                         </div>
                     </div>

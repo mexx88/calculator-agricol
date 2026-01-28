@@ -220,27 +220,35 @@ input[type="number"] {
 .crop-input-header {
     display: grid;
     grid-template-columns: 140px 1fr 1fr;
-    gap: 10px;
+    gap: 15px;
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eef2ee;
+    border-bottom: 2px solid #eef2ee;
 }
 
 .crop-input-row {
     display: grid;
     grid-template-columns: 140px 1fr 1fr;
-    gap: 10px;
+    gap: 15px;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .crop-input-row input[type="number"] {
-    padding: 0.4rem;
-    font-size: 0.9rem;
+    padding: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    border: 2px solid #d0d6d0;
+}
+
+.crop-input-row input[type="number"]:focus {
+    border-color: var(--primary);
+    background: #f0fdf0;
 }
 
 .checkbox-container.mini {

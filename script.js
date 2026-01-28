@@ -142,21 +142,36 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.score_badge.style.background = score > 70 ? '#4caf50' : '#fbc02d';
 
         // --- Dynamic Conclusions ---
-        const cropsList = selectedCrops.length > 0 ? selectedCrops.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ') : 'cultură';
+        const cropsList = selectedCrops.length > 0 ? selectedCrops.map(c => {
+            const names = { grau: 'Grâu', porumb: 'Porumb', floare: 'Floarea S.', rapita: 'Rapiță' };
+            return names[c] || c;
+        }).join(', ') : 'cultură';
+
+        const storageBenefitsEUR = arbitrageEUR + storageProfitEUR + degradationCostEUR;
+
         elements.conclusions_box.innerHTML = `
             <div class="conclusion-item">
-                <p>📍 În zona <strong>${zone.toUpperCase()}</strong> pentru <strong>${cropsList}</strong>, pierderea ta de oportunitate prin ne-stocare este de <strong>${formatEUR(arbitrageEUR + storageProfitEUR + degradationCostEUR)}</strong> pe an.</p>
+                <p>📍 În regiunea <strong>${zone.toUpperCase()}</strong>, pentru un mix de <strong>${cropsList}</strong>, pierzi anual <strong>${formatEUR(storageBenefitsEUR)}</strong> pentru că nu ai un depozit propriu.</p>
             </div>
             <div class="conclusion-item">
-                <p>🚀 Tranziția la tehnologia <strong>${techYear}</strong> îți reduce factura de combustibil cu <strong>${formatEUR(dieselSavingEUR)}</strong> anual pentru o suprafață totală de ${area} ha.</p>
+                <p>💰 <strong>Vânzarea la preț mai bun:</strong> Stocarea îți aduce un plus de <strong>${formatMDL(storageProfitMDL)}</strong> prin așteptarea unui preț mai bun în piață.</p>
+            </div>
+            <div class="conclusion-item">
+                <p>🚜 <strong>Eficiență Tehnică:</strong> Trecerea la utilaje din <strong>${techYear}</strong> îți reduce cheltuiala cu motorina cu <strong>${formatEUR(dieselSavingEUR)}</strong> în fiecare an.</p>
             </div>
         `;
 
-        // Executive Narrative
+        // Executive Narrative - More Farmer Friendly
+        const techMessage = priceNew > 0
+            ? `iar prin modernizarea tehnicii economisiți încă <b>${formatEUR(dieselSavingEUR + gpsSavingEUR)}</b>.`
+            : `în timp ce investiția în tehnică poate fi planificată ulterior.`;
+
         elements.summary_text.innerHTML = `
-            Domnule fermier, exploatația dumneavoastră de <strong>${area} ha</strong> (mix: ${selectedCrops.join(', ')}) din regiunea <strong>${zone}</strong> 
-            poate genera economii totale de <strong>${formatEUR(totalAnnualSavingsEUR)}</strong> anual prin investiții strategice în infrastructură Otig Holdings. 
-            Investiția netă (după subvenție AIPA ${(aipaPercent * 100).toFixed(0)}%) se amortizează în <strong>${paybackSeasons} sezoane</strong>.
+            Domnule fermier, pentru suprafața totală de <strong>${area.toLocaleString('ro-RO')} ha</strong> lucrată, 
+            lipsa unui depozit vă costă <strong>${formatEUR(storageBenefitsEUR)}</strong> în fiecare sezon. 
+            Investiția în infrastructura <b>Otig Holdings</b> vă permite să păstrați acești bani în buzunar, 
+            ${techMessage} 
+            Rentabilitatea totală a afacerii crește cu <strong>${formatEUR(totalAnnualSavingsEUR)}</strong> anual.
         `;
     };
 
