@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Analiză ROI Agricol | Agro-Soyuz</title>
+    <title>Sistem Analiză ROI Agricol | Otig Holdings</title>
     <meta name="description"
         content="Sistem profesional de analiză ROI pentru investiții în hangare și tehnologie agricolă.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
         <header>
             <div class="header-content">
                 <h1>Sistem de Analiză ROI</h1>
-                <p class="subtitle">Platformă de Optimizare a Rentabilității Agro-Soyuz</p>
+                <p class="subtitle">Platformă de Optimizare a Rentabilității Otig Holdings</p>
             </div>
             <div class="b2b-controls">
                 <button id="btn-export-pdf" class="btn-primary">Export Raport PDF</button>
@@ -43,12 +43,29 @@
                             </select>
                         </div>
                         <div class="input-group">
-                            <label for="tip_cultura">Tip Cultură</label>
-                            <select id="tip_cultura">
-                                <option value="grau">Grâu</option>
-                                <option value="porumb">Porumb</option>
-                                <option value="floare">Floarea Soarelui</option>
-                            </select>
+                            <label>Tip Cultură</label>
+                            <div class="crop-checkboxes">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" name="tip_cultura" value="grau" checked>
+                                    <span class="checkmark"></span>
+                                    Grâu
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" name="tip_cultura" value="porumb">
+                                    <span class="checkmark"></span>
+                                    Porumb
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" name="tip_cultura" value="floare">
+                                    <span class="checkmark"></span>
+                                    Floarea Soarelui
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" name="tip_cultura" value="rapita">
+                                    <span class="checkmark"></span>
+                                    Rapiță
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -67,11 +84,14 @@
                     </div>
 
                     <div class="input-row">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="aipa_subventie">
-                            <span class="checkmark"></span>
-                            Aplică Subvenție AIPA (50%)
-                        </label>
+                        <div class="input-group">
+                            <label for="aipa_subventie">Subvenție AIPA</label>
+                            <select id="aipa_subventie">
+                                <option value="0">Fără Subvenție</option>
+                                <option value="0.3">AIPA 30%</option>
+                                <option value="0.5" selected>AIPA 50%</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -102,8 +122,11 @@
                             <input type="number" id="diesel_price" value="1.1" step="0.01">
                         </div>
                         <div class="input-group">
-                            <label>Economie 15L/ha</label>
-                            <div class="static-val">Tehnologie 2022</div>
+                            <label for="tehnologie_utilaj">Nivel Tehnologic</label>
+                            <select id="tehnologie_utilaj">
+                                <option value="2022">Tehnologie 2022</option>
+                                <option value="2025" selected>Tehnologie 2025 (<1000h, Full)</option>
+                            </select>
                         </div>
                     </div>
                     <div class="input-group">
@@ -191,7 +214,7 @@
 
         <footer>
             <div class="footer-info">
-                <p><strong>Agro-Soyuz</strong> - Lider în Tehnologie Agricolă și Infrastructură</p>
+                <p><strong>Otig Holdings</strong> - Lider în Tehnologie Agricolă și Infrastructură</p>
                 <p>&copy; 2026 Toate drepturile rezervate.</p>
             </div>
         </footer>
