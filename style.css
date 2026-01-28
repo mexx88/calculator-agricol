@@ -146,10 +146,13 @@ h1 {
 
 input[type="number"] {
     width: 100%;
-    padding: 0.7rem;
-    border: 2px solid #eef2ee;
-    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    border: 3px solid #d0d6d0;
+    border-radius: 4px;
     font-family: inherit;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--text-main);
 }
 
 /* Checkbox AIPA */
@@ -210,40 +213,50 @@ input[type="number"] {
     transform: rotate(45deg);
 }
 
-.crop-inputs-container {
-    background: #f8faf8;
+.crop-entry {
+    background: #ffffff;
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid #eef2ee;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
-.crop-input-header {
+.crop-entry .checkbox-container {
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #f8faf8;
+    padding-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.crop-field-grid {
     display: grid;
-    grid-template-columns: 140px 1fr 1fr;
-    gap: 15px;
-    font-weight: 700;
-    font-size: 0.9rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.field-item small {
+    display: block;
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #eef2ee;
+    margin-bottom: 4px;
+    font-weight: 700;
 }
 
-.crop-input-row {
-    display: grid;
-    grid-template-columns: 140px 1fr 1fr;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 0.8rem;
-}
-
-.crop-input-row input[type="number"] {
-    padding: 0.8rem;
+.crop-field-grid input[type="number"] {
+    padding: 0.5rem 0.9rem;
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--primary);
-    border: 2px solid #d0d6d0;
+    color: var(--text-main);
+    border: 3px solid #d0d6d0;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.crop-field-grid input[type="number"]:focus {
+    border-color: var(--primary);
+    background: #f0fdf0;
 }
 
 .crop-input-row input[type="number"]:focus {
@@ -324,22 +337,36 @@ input[type="number"] {
 
 select {
     width: 100%;
-    padding: 0.8rem;
-    border: 2px solid #eef2ee;
-    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    border: 3px solid #d0d6d0;
+    border-radius: 4px;
     font-family: inherit;
     background: white;
     cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232d5a27' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 1rem) center;
+}
+
+select:focus {
+    border-color: var(--primary);
+    outline: none;
 }
 
 .static-val {
-    padding: 0.8rem;
+    padding: 1rem;
     background: #f0f4f0;
-    border-radius: 8px;
+    border-radius: 4px;
     font-weight: 700;
     color: var(--primary);
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
+    border: 3px solid #eef2ee;
 }
 
 .card-header-flex {

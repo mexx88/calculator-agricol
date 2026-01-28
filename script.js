@@ -142,36 +142,58 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.score_badge.style.background = score > 70 ? '#4caf50' : '#fbc02d';
 
         // --- Dynamic Conclusions ---
-        const cropsList = selectedCrops.length > 0 ? selectedCrops.map(c => {
-            const names = { grau: 'Grâu', porumb: 'Porumb', floare: 'Floarea S.', rapita: 'Rapiță' };
-            return names[c] || c;
-        }).join(', ') : 'cultură';
+        const namesMap = { grau: 'Grâu', porumb: 'Porumb', floare: 'Floarea Soarelui', rapita: 'Rapiță' };
+        const cropsListLong = selectedCrops.length > 0
+            ? selectedCrops.map(c => namesMap[c] || c).join(', ')
+            : 'nicio cultură selectată';
+
+        // Calculate detailed gains per cereal
+        let cropGainsHtml = '';
+        selectedCrops.forEach(cropType => {
+            const haInput = document.querySelector(`.crop-ha[data-crop="${cropType}"]`);
+            const yieldInput = document.querySelector(`.crop-yield[data-crop="${cropType}"]`);
+            const prodT = (parseFloat(haInput.value) || 0) * (parseFloat(yieldInput.value) || 0);
+
+            if (prodT > 0 && totalProductionTones > 0) {
+                const cropStored = (prodT / totalProductionTones) * storedTones;
+                const cropProfit = (cropStored * 1000) * scenarioMDL;
+                if (cropProfit > 0) {
+                    cropGainsHtml += `<li><strong>${namesMap[cropType]}:</strong> +${formatMDL(cropProfit)}</li>`;
+                }
+            }
+        });
 
         const storageBenefitsEUR = arbitrageEUR + storageProfitEUR + degradationCostEUR;
 
         elements.conclusions_box.innerHTML = `
             <div class="conclusion-item">
-                <p>📍 În regiunea <strong>${zone.toUpperCase()}</strong>, pentru un mix de <strong>${cropsList}</strong>, pierzi anual <strong>${formatEUR(storageBenefitsEUR)}</strong> pentru că nu ai un depozit propriu.</p>
+                <p>📍 <strong>Analiză pe Culturi:</strong></p>
+                <ul style="list-style: none; padding: 0.5rem 0 0 1rem; margin: 0;">
+                    ${cropGainsHtml || '<li>Nu există stocare activă.</li>'}
+                </ul>
+                <p style="margin-top: 0.8rem; border-top: 1px dashed #ccc; padding-top: 0.5rem;">
+                    <strong>Total Câștig din Vânzare: ${formatMDL(storageProfitMDL)}</strong>
+                </p>
             </div>
             <div class="conclusion-item">
-                <p>💰 <strong>Vânzarea la preț mai bun:</strong> Stocarea îți aduce un plus de <strong>${formatMDL(storageProfitMDL)}</strong> prin așteptarea unui preț mai bun în piață.</p>
+                <p>❄️ <strong>Economie Achiziție de Iarnă:</strong></p>
+                <p>Prin stocarea semințelor și îngrășămintelor procurate în timpul iernii (când prețurile sunt minime), generați un câștig de <strong>${formatMDL(arbitrageMDL)}</strong> (${formatEUR(arbitrageEUR)}).</p>
             </div>
             <div class="conclusion-item">
-                <p>🚜 <strong>Eficiență Tehnică:</strong> Trecerea la utilaje din <strong>${techYear}</strong> îți reduce cheltuiala cu motorina cu <strong>${formatEUR(dieselSavingEUR)}</strong> în fiecare an.</p>
+                <p>📈 <strong>Impact Total Depozit:</strong></p>
+                <p>Depozitul Otig Holdings vă aduce un plus de <strong>${formatEUR(storageBenefitsEUR)}</strong> pe an, independent de restul utilajelor.</p>
+            </div>
+            <div class="conclusion-item">
+                <p>🚜 <strong>Eficiență Tehnică:</strong> Utilajul nou (${techYear}) aduce economii de <strong>${formatEUR(dieselSavingEUR + gpsSavingEUR)}</strong> prin reducerea consumului și precizie GPS.</p>
             </div>
         `;
 
         // Executive Narrative - More Farmer Friendly
-        const techMessage = priceNew > 0
-            ? `iar prin modernizarea tehnicii economisiți încă <b>${formatEUR(dieselSavingEUR + gpsSavingEUR)}</b>.`
-            : `în timp ce investiția în tehnică poate fi planificată ulterior.`;
-
         elements.summary_text.innerHTML = `
-            Domnule fermier, pentru suprafața totală de <strong>${area.toLocaleString('ro-RO')} ha</strong> lucrată, 
-            lipsa unui depozit vă costă <strong>${formatEUR(storageBenefitsEUR)}</strong> în fiecare sezon. 
-            Investiția în infrastructura <b>Otig Holdings</b> vă permite să păstrați acești bani în buzunar, 
-            ${techMessage} 
-            Rentabilitatea totală a afacerii crește cu <strong>${formatEUR(totalAnnualSavingsEUR)}</strong> anual.
+            Domnule fermier, pentru suprafața de <strong>${area.toLocaleString('ro-RO')} ha</strong> cultivată cu <strong>${cropsListLong}</strong>, 
+            lipsa unui depozit propriu înseamnă că pierdeți <strong>${formatEUR(storageBenefitsEUR)}</strong> în fiecare sezon. 
+            Investiția în infrastructura <b>Otig Holdings</b> vă permite să aplicați <b>strategia achizițiilor de iarnă</b> (semințe și îngrășăminte ieftine) 
+            și să vindeți cerealele la preț maxim. Profitul anual total devine cu <strong>${formatEUR(totalAnnualSavingsEUR)}</strong> mai mare.
         `;
     };
 

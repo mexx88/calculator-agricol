@@ -33,62 +33,95 @@
                 <div class="card input-card">
                     <h2><span class="icon">🚜</span> Setări Regionale</h2>
 
-                    <div class="flex-inputs">
-                        <div class="input-group">
-                            <label for="zona_agricola">Zona Agricolă</label>
-                            <select id="zona_agricola">
-                                <option value="nord">Nord</option>
-                                <option value="centru">Centru</option>
-                                <option value="sud">Sud</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Configurare Culturi</label>
-                            <div class="crop-inputs-container">
-                                <div class="crop-input-header">
-                                    <span>Cultură</span>
-                                    <span>Hectare</span>
-                                    <span>t/ha</span>
+                    <div class="input-group">
+                        <label for="zona_agricola">Zona Agricolă</label>
+                        <select id="zona_agricola">
+                            <option value="nord">Nord</option>
+                            <option value="centru" selected>Centru</option>
+                            <option value="sud">Sud</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Configurare Culturi (Suprafață și Randament)</label>
+                        <div class="crop-inputs-container" id="crop-inputs-container">
+                            <!-- Grâu -->
+                            <div class="crop-entry">
+                                <label class="checkbox-container mini">
+                                    <input type="checkbox" name="crop_enabled" value="grau" checked>
+                                    <span class="checkmark"></span>
+                                    Grâu
+                                </label>
+                                <div class="crop-field-grid">
+                                    <div class="field-item">
+                                        <small>Hectare</small>
+                                        <input type="number" class="crop-ha" data-crop="grau" value="100" min="0">
+                                    </div>
+                                    <div class="field-item">
+                                        <small>Randament (t/ha)</small>
+                                        <input type="number" class="crop-yield" data-crop="grau" value="4.0" step="0.1"
+                                            min="0">
+                                    </div>
                                 </div>
-                                <div class="crop-input-row">
-                                    <label class="checkbox-container mini">
-                                        <input type="checkbox" name="crop_enabled" value="grau" checked>
-                                        <span class="checkmark"></span>
-                                        Grâu
-                                    </label>
-                                    <input type="number" class="crop-ha" data-crop="grau" value="100" min="0">
-                                    <input type="number" class="crop-yield" data-crop="grau" value="4.0" step="0.1"
-                                        min="0">
+                            </div>
+
+                            <!-- Porumb -->
+                            <div class="crop-entry">
+                                <label class="checkbox-container mini">
+                                    <input type="checkbox" name="crop_enabled" value="porumb">
+                                    <span class="checkmark"></span>
+                                    Porumb
+                                </label>
+                                <div class="crop-field-grid">
+                                    <div class="field-item">
+                                        <small>Hectare</small>
+                                        <input type="number" class="crop-ha" data-crop="porumb" value="0" min="0">
+                                    </div>
+                                    <div class="field-item">
+                                        <small>Randament (t/ha)</small>
+                                        <input type="number" class="crop-yield" data-crop="porumb" value="6.5"
+                                            step="0.1" min="0">
+                                    </div>
                                 </div>
-                                <div class="crop-input-row">
-                                    <label class="checkbox-container mini">
-                                        <input type="checkbox" name="crop_enabled" value="porumb">
-                                        <span class="checkmark"></span>
-                                        Porumb
-                                    </label>
-                                    <input type="number" class="crop-ha" data-crop="porumb" value="0" min="0">
-                                    <input type="number" class="crop-yield" data-crop="porumb" value="6.5" step="0.1"
-                                        min="0">
+                            </div>
+
+                            <!-- Floarea Soarelui -->
+                            <div class="crop-entry">
+                                <label class="checkbox-container mini">
+                                    <input type="checkbox" name="crop_enabled" value="floare">
+                                    <span class="checkmark"></span>
+                                    Floarea Soarelui
+                                </label>
+                                <div class="crop-field-grid">
+                                    <div class="field-item">
+                                        <small>Hectare</small>
+                                        <input type="number" class="crop-ha" data-crop="floare" value="0" min="0">
+                                    </div>
+                                    <div class="field-item">
+                                        <small>Randament (t/ha)</small>
+                                        <input type="number" class="crop-yield" data-crop="floare" value="2.5"
+                                            step="0.1" min="0">
+                                    </div>
                                 </div>
-                                <div class="crop-input-row">
-                                    <label class="checkbox-container mini">
-                                        <input type="checkbox" name="crop_enabled" value="floare">
-                                        <span class="checkmark"></span>
-                                        Floarea S.
-                                    </label>
-                                    <input type="number" class="crop-ha" data-crop="floare" value="0" min="0">
-                                    <input type="number" class="crop-yield" data-crop="floare" value="2.5" step="0.1"
-                                        min="0">
-                                </div>
-                                <div class="crop-input-row">
-                                    <label class="checkbox-container mini">
-                                        <input type="checkbox" name="crop_enabled" value="rapita">
-                                        <span class="checkmark"></span>
-                                        Rapiță
-                                    </label>
-                                    <input type="number" class="crop-ha" data-crop="rapita" value="0" min="0">
-                                    <input type="number" class="crop-yield" data-crop="rapita" value="2.5" step="0.1"
-                                        min="0">
+                            </div>
+
+                            <!-- Rapiță -->
+                            <div class="crop-entry">
+                                <label class="checkbox-container mini">
+                                    <input type="checkbox" name="crop_enabled" value="rapita">
+                                    <span class="checkmark"></span>
+                                    Rapiță
+                                </label>
+                                <div class="crop-field-grid">
+                                    <div class="field-item">
+                                        <small>Hectare</small>
+                                        <input type="number" class="crop-ha" data-crop="rapita" value="0" min="0">
+                                    </div>
+                                    <div class="field-item">
+                                        <small>Randament (t/ha)</small>
+                                        <input type="number" class="crop-yield" data-crop="rapita" value="2.5"
+                                            step="0.1" min="0">
+                                    </div>
                                 </div>
                             </div>
                         </div>
