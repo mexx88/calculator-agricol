@@ -101,10 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.res_eco_arbitraj.textContent = formatMDL(arbitrageMDL);
         const arbitrageEUR = arbitrageMDL * MDL_TO_EUR;
 
-        // --- Module 3: Storage ROI & Scenariu ---
+        // --- Module 3: Storage ROI & Scenariu (Dual Calculation) ---
         const hangarCapacity = hangarMp * 2.5;
         const totalYieldTones_val = area * yieldPerHa;
         const storedTones = Math.min(totalYieldTones_val, hangarCapacity);
+
+        // Scenario 1: 0.5 MDL
+        const storageProfitMDL_05 = (storedTones * 1000) * 0.5;
+        const storageProfitEUR_05 = storageProfitMDL_05 * MDL_TO_EUR;
+
+        // Scenario 2: 1.0 MDL
+        const storageProfitMDL_10 = (storedTones * 1000) * 1.0;
+        const storageProfitEUR_10 = storageProfitMDL_10 * MDL_TO_EUR;
+
+        // Use the currently selected scenario for the general display values
         const storageProfitMDL = (storedTones * 1000) * scenarioMDL;
         const storageProfitEUR = storageProfitMDL * MDL_TO_EUR;
         elements.res_profit_stocare.textContent = formatMDL(storageProfitMDL);
@@ -147,8 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ? selectedCrops.map(c => namesMap[c] || c).join(', ')
             : 'nicio cultură selectată';
 
-        // Calculate detailed gains per cereal
-        let cropGainsHtml = '';
+        // Calculate detailed gains per cereal for both scenarios
+        let cropGainsHtml_05 = '';
+        let cropGainsHtml_10 = '';
         selectedCrops.forEach(cropType => {
             const haInput = document.querySelector(`.crop-ha[data-crop="${cropType}"]`);
             const yieldInput = document.querySelector(`.crop-yield[data-crop="${cropType}"]`);
@@ -156,44 +167,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (prodT > 0 && totalProductionTones > 0) {
                 const cropStored = (prodT / totalProductionTones) * storedTones;
-                const cropProfit = (cropStored * 1000) * scenarioMDL;
-                if (cropProfit > 0) {
-                    cropGainsHtml += `<li><strong>${namesMap[cropType]}:</strong> +${formatMDL(cropProfit)}</li>`;
-                }
+                const gain05 = (cropStored * 1000) * 0.5;
+                const gain10 = (cropStored * 1000) * 1.0;
+
+                if (gain05 > 0) cropGainsHtml_05 += `<li>${namesMap[cropType]}: +${formatMDL(gain05)}</li>`;
+                if (gain10 > 0) cropGainsHtml_10 += `<li>${namesMap[cropType]}: +${formatMDL(gain10)}</li>`;
             }
         });
 
         const storageBenefitsEUR = arbitrageEUR + storageProfitEUR + degradationCostEUR;
 
         elements.conclusions_box.innerHTML = `
-            <div class="conclusion-item">
-                <p>📍 <strong>Analiză pe Culturi:</strong></p>
-                <ul style="list-style: none; padding: 0.5rem 0 0 1rem; margin: 0;">
-                    ${cropGainsHtml || '<li>Nu există stocare activă.</li>'}
-                </ul>
-                <p style="margin-top: 0.8rem; border-top: 1px dashed #ccc; padding-top: 0.5rem;">
-                    <strong>Total Câștig din Vânzare: ${formatMDL(storageProfitMDL)}</strong>
-                </p>
+            <div class="scenario-comparison" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="conclusion-item" style="background: #fdfcf0; border-left: 5px solid #fbc02d;">
+                    <p>📉 <strong>Scenariu Prudent (0.5 MDL/kg)</strong></p>
+                    <ul style="list-style: none; padding: 0.5rem 0 0 0.5rem; margin: 0; font-size: 0.85rem;">
+                        ${cropGainsHtml_05 || '<li>Fără profit stocare</li>'}
+                    </ul>
+                    <p style="margin-top: 0.8rem; border-top: 1px dashed #ccc; padding-top: 0.5rem; font-weight: 700;">
+                        Câștig Stocare: ${formatMDL(storageProfitMDL_05)}
+                    </p>
+                </div>
+                <div class="conclusion-item" style="background: #f0f7f0; border-left: 5px solid #4caf50;">
+                    <p>📈 <strong>Scenariu Optimist (1.0 MDL/kg)</strong></p>
+                    <ul style="list-style: none; padding: 0.5rem 0 0 0.5rem; margin: 0; font-size: 0.85rem;">
+                        ${cropGainsHtml_10 || '<li>Fără profit stocare</li>'}
+                    </ul>
+                    <p style="margin-top: 0.8rem; border-top: 1px dashed #ccc; padding-top: 0.5rem; font-weight: 700;">
+                        Câștig Stocare: ${formatMDL(storageProfitMDL_10)}
+                    </p>
+                </div>
             </div>
-            <div class="conclusion-item">
-                <p>❄️ <strong>Economie Achiziție de Iarnă:</strong></p>
-                <p>Prin stocarea semințelor și îngrășămintelor procurate în timpul iernii (când prețurile sunt minime), generați un câștig de <strong>${formatMDL(arbitrageMDL)}</strong> (${formatEUR(arbitrageEUR)}).</p>
+
+            <div class="conclusion-item" style="margin-top: 15px;">
+                <p>❄️ <strong>Strategia Achizițiilor de Iarnă:</strong></p>
+                <p>Prin stocarea semințelor și îngrășămintelor procurate iarna (când prețurile sunt minime), generați un extra-câștig de <strong>${formatMDL(arbitrageMDL)}</strong> (${formatEUR(arbitrageEUR)}).</p>
             </div>
+            
             <div class="conclusion-item">
-                <p>📈 <strong>Impact Total Depozit:</strong></p>
-                <p>Depozitul Otig Holdings vă aduce un plus de <strong>${formatEUR(storageBenefitsEUR)}</strong> pe an, independent de restul utilajelor.</p>
-            </div>
-            <div class="conclusion-item">
-                <p>🚜 <strong>Eficiență Tehnică:</strong> Utilajul nou (${techYear}) aduce economii de <strong>${formatEUR(dieselSavingEUR + gpsSavingEUR)}</strong> prin reducerea consumului și precizie GPS.</p>
+                <p>🚜 <strong>Eficiență Tehnică:</strong> Utilajul nou (${techYear}) economisește <strong>${formatEUR(dieselSavingEUR + gpsSavingEUR)}</strong> anual prin motorină și precizie GPS.</p>
             </div>
         `;
 
         // Executive Narrative - More Farmer Friendly
+        const maxTotalGain = dieselSavingEUR + gpsSavingEUR + arbitrageEUR + storageProfitEUR_10 + degradationCostEUR;
         elements.summary_text.innerHTML = `
             Domnule fermier, pentru suprafața de <strong>${area.toLocaleString('ro-RO')} ha</strong> cultivată cu <strong>${cropsListLong}</strong>, 
-            lipsa unui depozit propriu înseamnă că pierdeți <strong>${formatEUR(storageBenefitsEUR)}</strong> în fiecare sezon. 
-            Investiția în infrastructura <b>Otig Holdings</b> vă permite să aplicați <b>strategia achizițiilor de iarnă</b> (semințe și îngrășăminte ieftine) 
-            și să vindeți cerealele la preț maxim. Profitul anual total devine cu <strong>${formatEUR(totalAnnualSavingsEUR)}</strong> mai mare.
+            lipsa depozitului vă face să pierdeți între <strong>${formatEUR(storageProfitEUR_05 + arbitrageEUR)}</strong> și <strong>${formatEUR(storageProfitEUR_10 + arbitrageEUR)}</strong> anual. 
+            Investiția în infrastructura <b>Otig Holdings</b> securizează profitul prin achiziții de iarnă ieftine și vânzări la prețuri maxime. 
+            Profitul anual total poate crește cu până la <strong>${formatEUR(maxTotalGain)}</strong>.
         `;
     };
 
@@ -234,11 +256,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 6. PDF Export
     elements.btn_export.addEventListener('click', () => {
         const opt = {
-            margin: 0.3,
+            margin: 0.5,
             filename: 'Raport_Otig_Holdings_ROI.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
         elements.btn_export.style.display = 'none';
         html2pdf().set(opt).from(elements.calculator_content).save().then(() => {
