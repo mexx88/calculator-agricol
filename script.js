@@ -53,18 +53,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const calculate = () => {
         const zone = elements.zona.value;
 
-        // Handle Multi-Crop Selection
-        const selectedCrops = Array.from(document.querySelectorAll('input[name="tip_cultura"]:checked')).map(el => el.value);
-        let yieldPerHa = 0;
-        if (selectedCrops.length > 0) {
-            const sumYields = selectedCrops.reduce((sum, crop) => sum + REGIONAL_PRESETS[zone][crop], 0);
-            yieldPerHa = sumYields / selectedCrops.length;
-        }
+        // Handle Multi-Crop Detailed Selection
+        let totalArea = 0;
+        let totalProductionTones = 0;
+        const selectedCrops = [];
 
-        const area = parseFloat(elements.suprafata.value);
-        // If yield is 0 (no crops selected), use a manual override if user adjusted slider, 
-        // but typically we should reflect the average.
-        const currentManualYield = parseFloat(elements.productie.value);
+        document.querySelectorAll('input[name="crop_enabled"]:checked').forEach(cb => {
+            const cropType = cb.value;
+            const haInput = document.querySelector(`.crop-ha[data-crop="${cropType}"]`);
+            const yieldInput = document.querySelector(`.crop-yield[data-crop="${cropType}"]`);
+
+            const areaVal = parseFloat(haInput.value) || 0;
+            const yieldVal = parseFloat(yieldInput.value) || 0;
+
+            if (areaVal > 0) {
+                totalArea += areaVal;
+                totalProductionTones += areaVal * yieldVal;
+                selectedCrops.push(cropType);
+            }
+        });
+
+        const averageYield = totalArea > 0 ? totalProductionTones / totalArea : 0;
+
+        // Update values used by ROI modules
+        const area = totalArea;
+        const yieldPerHa = averageYield;
 
         const hangarMp = parseFloat(elements.hangar_mp.value);
         const aipaPercent = parseFloat(document.getElementById('aipa_subventie').value);
@@ -73,14 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const techYear = document.getElementById('tehnologie_utilaj').value;
 
         // Update UI Labels
-        elements.val_suprafata.textContent = area;
-        elements.val_productie.textContent = yieldPerHa > 0 ? yieldPerHa.toFixed(1) : currentManualYield.toFixed(1);
-        if (yieldPerHa > 0) elements.productie.value = yieldPerHa.toFixed(1);
+        elements.val_suprafata.textContent = totalArea.toLocaleString('ro-RO');
+        elements.val_productie.textContent = averageYield.toFixed(2);
         elements.val_hangar_mp.textContent = hangarMp;
 
         // --- Module 1: Fuel Efficiency ---
-        // 2022: 15L saving, 2025: 18L saving
-        const fuelSavingL = techYear === '2025' ? 18 : 15;
+        // 2022: 15L saving, 2023-2025: 18L saving
+        const fuelSavingL = (techYear === '2022') ? 15 : 18;
         const dieselSavingEUR = area * fuelSavingL * dPrice;
         elements.res_eco_diesel.textContent = formatEUR(dieselSavingEUR);
 
@@ -91,9 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Module 3: Storage ROI & Scenariu ---
         const hangarCapacity = hangarMp * 2.5;
-        const finalYield = yieldPerHa > 0 ? yieldPerHa : currentManualYield;
-        const totalYieldTones = area * finalYield;
-        const storedTones = Math.min(totalYieldTones, hangarCapacity);
+        const totalYieldTones_val = area * yieldPerHa;
+        const storedTones = Math.min(totalYieldTones_val, hangarCapacity);
         const storageProfitMDL = (storedTones * 1000) * scenarioMDL;
         const storageProfitEUR = storageProfitMDL * MDL_TO_EUR;
         elements.res_profit_stocare.textContent = formatMDL(storageProfitMDL);
@@ -104,14 +115,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Module 4: Technologies (GPS & Demo) ---
         const totalInputsEstimEUR = (area * 200) + (area * (fertKgPerHa * 600 / 1000));
-        // 2025 tech has better GPS/Section control (12% vs 10%)
-        const gpsSavingPercent = techYear === '2025' ? 0.12 : 0.10;
+        // 2023+ tech has better GPS/Section control (12% vs 10%)
+        const gpsSavingPercent = (techYear === '2022') ? 0.10 : 0.12;
         const gpsSavingEUR = totalInputsEstimEUR * gpsSavingPercent;
         elements.res_eco_gps.textContent = formatEUR(gpsSavingEUR);
 
         const priceNew = parseFloat(elements.utilaj_nou.value);
-        // 2025 demo units might be slightly more expensive but still discounted
-        const discountFactor = techYear === '2025' ? 0.80 : 0.75;
+        // Discount factor for demo units
+        const discountFactor = (techYear === '2022') ? 0.75 : 0.80;
         const priceDemo = priceNew * discountFactor;
         const demoSavingEUR = priceNew - priceDemo;
         elements.res_eco_demo.textContent = formatEUR(demoSavingEUR);
@@ -137,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>📍 În zona <strong>${zone.toUpperCase()}</strong> pentru <strong>${cropsList}</strong>, pierderea ta de oportunitate prin ne-stocare este de <strong>${formatEUR(arbitrageEUR + storageProfitEUR + degradationCostEUR)}</strong> pe an.</p>
             </div>
             <div class="conclusion-item">
-                <p>🚀 Tranziția la tehnologia <strong>${techYear}</strong> îți reduce factura de combustibil cu <strong>${formatEUR(dieselSavingEUR)}</strong> anual tipic pentru o suprafață de ${area} ha.</p>
+                <p>🚀 Tranziția la tehnologia <strong>${techYear}</strong> îți reduce factura de combustibil cu <strong>${formatEUR(dieselSavingEUR)}</strong> anual pentru o suprafață totală de ${area} ha.</p>
             </div>
         `;
 
@@ -157,17 +168,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. Event Listeners
     elements.zona.addEventListener('change', updatePresets);
 
-    // Listen for any crop checkbox change
-    document.querySelectorAll('input[name="tip_cultura"]').forEach(cb => {
+    // Listen for any crop input change
+    document.querySelectorAll('input[name="crop_enabled"]').forEach(cb => {
         cb.addEventListener('change', calculate);
+    });
+    document.querySelectorAll('.crop-ha, .crop-yield').forEach(input => {
+        input.addEventListener('input', calculate);
     });
 
     // Listen for AIPA and Technology changes
     document.getElementById('aipa_subventie').addEventListener('change', calculate);
     document.getElementById('tehnologie_utilaj').addEventListener('change', calculate);
 
-    [elements.suprafata, elements.productie, elements.hangar_mp,
-    elements.ingrasamant_kg_ha, elements.diesel_price, elements.utilaj_nou].forEach(el => {
+    [elements.hangar_mp, elements.ingrasamant_kg_ha,
+    elements.diesel_price, elements.utilaj_nou].forEach(el => {
         el.addEventListener('input', calculate);
     });
 
