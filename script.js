@@ -8,16 +8,33 @@ document.addEventListener('DOMContentLoaded', () => {
         productie: document.getElementById('productie'),
         aipa: document.getElementById('aipa_subventie'),
         hangar_mp: document.getElementById('hangar_mp'),
+        hangar_type: document.getElementById('hangar_type'),
         ingrasamant_kg_ha: document.getElementById('ingrasamant_kg_ha'),
         diesel_price: document.getElementById('diesel_price'),
         utilaj_nou: document.getElementById('utilaj_nou'),
+        soil_hardness: document.getElementById('soil_hardness'),
+        current_equipment: document.getElementById('current_equipment'),
+        notill_enabled: document.getElementById('notill_enabled'),
 
         // Display Values
         val_suprafata: document.getElementById('val-suprafata'),
         val_productie: document.getElementById('val-productie'),
         val_hangar_mp: document.getElementById('val-hangar_mp'),
+        val_soil_hardness: document.getElementById('val-soil_hardness'),
         score_badge: document.getElementById('farm-efficiency-score'),
         conclusions_box: document.getElementById('conclusions-container'),
+
+        // Comparison Results
+        comparison_hardness: document.getElementById('comparison-hardness'),
+        res_old_consumption: document.getElementById('res-old-consumption'),
+        res_new_consumption: document.getElementById('res-new-consumption'),
+        res_notill_savings: document.getElementById('res-notill-savings'),
+        notill_savings_display: document.getElementById('notill-savings-display'),
+        old_tech_warning: document.getElementById('old-tech-warning'),
+
+        // Tech Recommendations
+        tech_recommendations: document.getElementById('tech-recommendations'),
+        pvc_benefits_section: document.getElementById('pvc-benefits-section'),
 
         // Results
         res_profit_stocare: document.getElementById('res-profit-stocare'),
@@ -52,6 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Calculation Engine
     const calculate = () => {
         const zone = elements.zona.value;
+        const soilHardness = parseFloat(elements.soil_hardness.value);
+        const currentEquip = elements.current_equipment.value;
+        const noTillEnabled = elements.notill_enabled.checked;
+        const hangarType = elements.hangar_type.value;
+
+        // Update soil hardness display
+        elements.val_soil_hardness.textContent = soilHardness;
+        elements.comparison_hardness.textContent = soilHardness;
 
         // Handle Multi-Crop Detailed Selection
         let totalArea = 0;
@@ -83,25 +108,100 @@ document.addEventListener('DOMContentLoaded', () => {
         const aipaPercent = parseFloat(document.getElementById('aipa_subventie').value);
         const dPrice = parseFloat(elements.diesel_price.value);
         const fertKgPerHa = parseFloat(elements.ingrasamant_kg_ha.value);
-        const techYear = document.getElementById('tehnologie_utilaj').value;
+        const techYear = parseInt(document.getElementById('tehnologie_utilaj').value);
 
         // Update UI Labels
         elements.val_suprafata.textContent = totalArea.toLocaleString('ro-RO');
         elements.val_productie.textContent = averageYield.toFixed(2);
         elements.val_hangar_mp.textContent = hangarMp;
 
+        // --- Equipment Comparison Logic ---
+        // Old equipment consumption based on soil hardness
+        let oldConsumption = 30; // Base consumption
+        let oldTechExplanation = '';
+
+        if (currentEquip === 'mtz') {
+            if (soilHardness >= 86) {
+                oldConsumption = 40;
+                oldTechExplanation = '⚠️ Pe un sol atât de tare (86), MTZ-ul patinează excesiv, crescând consumul de la 30L la 40L și distrugând transmisia.';
+            } else if (soilHardness >= 70) {
+                oldConsumption = 35;
+                oldTechExplanation = 'Pe sol tare, MTZ-ul consumă mai mult combustibil din cauza patinării.';
+            } else {
+                oldTechExplanation = 'Consumul standard pentru tractoare sovietice.';
+            }
+        } else if (currentEquip === 'y2012') {
+            oldConsumption = 28;
+            if (soilHardness >= 80) oldConsumption = 33;
+            oldTechExplanation = 'Tehnologie mai veche, eficiență redusă pe sol compactat.';
+        } else if (currentEquip === 'y2018') {
+            oldConsumption = 26;
+            if (soilHardness >= 80) oldConsumption = 30;
+            oldTechExplanation = 'Tehnologie relativ recentă, dar nu la nivelul 2020+.';
+        }
+
+        // New equipment consumption (stable regardless of soil hardness)
+        const techYearEfficiency = {
+            2020: 1.00,
+            2021: 1.025,
+            2022: 1.05,
+            2023: 1.075,
+            2024: 1.10,
+            2025: 1.125
+        };
+
+        const baseNewConsumption = 26;
+        const efficiencyMultiplier = techYearEfficiency[techYear] || 1.0;
+        const newConsumption = baseNewConsumption / efficiencyMultiplier;
+
+        // Display comparison
+        elements.res_old_consumption.textContent = `${oldConsumption.toFixed(1)} L/ha`;
+        elements.res_new_consumption.textContent = `${newConsumption.toFixed(1)} L/ha`;
+        elements.old_tech_warning.textContent = oldTechExplanation;
+
+        // No-Till savings
+        const noTillSavings = 42; // L/ha
+        if (noTillEnabled) {
+            elements.notill_savings_display.style.display = 'block';
+            elements.res_notill_savings.textContent = `${noTillSavings} L/ha`;
+        } else {
+            elements.notill_savings_display.style.display = 'none';
+        }
+
         // --- Module 1: Fuel Efficiency ---
-        // 2022: 15L saving, 2023-2025: 18L saving
-        const fuelSavingL = (techYear === '2022') ? 15 : 18;
-        const dieselSavingEUR = area * fuelSavingL * dPrice;
+        const fuelSavingPerHa = oldConsumption - newConsumption + (noTillEnabled ? noTillSavings : 0);
+        const dieselSavingEUR = area * fuelSavingPerHa * dPrice;
         elements.res_eco_diesel.textContent = formatEUR(dieselSavingEUR);
 
-        // --- Module 2: Input Arbitrage (Hangar) ---
+        // --- Module 2: Storage Loss Calculations based on Hangar Type ---
+        let storageLossPercent = 0;
+        let storageArbitrageBonus = scenarioMDL;
+
+        switch (hangarType) {
+            case 'pvc_otig':
+                storageLossPercent = 0;
+                elements.pvc_benefits_section.style.display = 'block';
+                break;
+            case 'metal':
+                storageLossPercent = 2;
+                elements.pvc_benefits_section.style.display = 'none';
+                break;
+            case 'beton_nou':
+                storageLossPercent = 1;
+                elements.pvc_benefits_section.style.display = 'none';
+                break;
+            case 'beton_vechi':
+                storageLossPercent = 6;
+                elements.pvc_benefits_section.style.display = 'none';
+                break;
+        }
+
+        // --- Module 3: Input Arbitrage (Hangar) ---
         const arbitrageMDL = ((area * fertKgPerHa) / 1000) * 2500;
         elements.res_eco_arbitraj.textContent = formatMDL(arbitrageMDL);
         const arbitrageEUR = arbitrageMDL * MDL_TO_EUR;
 
-        // --- Module 3: Storage ROI & Scenariu (Dual Calculation) ---
+        // --- Module 4: Storage ROI & Scenario ---
         const hangarCapacity = hangarMp * 2.5;
         const totalYieldTones_val = area * yieldPerHa;
         const storedTones = Math.min(totalYieldTones_val, hangarCapacity);
@@ -114,25 +214,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const storageProfitMDL_10 = (storedTones * 1000) * 1.0;
         const storageProfitEUR_10 = storageProfitMDL_10 * MDL_TO_EUR;
 
-        // Use the currently selected scenario for the general display values
+        // Use the currently selected scenario
         const storageProfitMDL = (storedTones * 1000) * scenarioMDL;
         const storageProfitEUR = storageProfitMDL * MDL_TO_EUR;
         elements.res_profit_stocare.textContent = formatMDL(storageProfitMDL);
 
-        // Quality Factor (5% degradation)
-        const degradationCostEUR = (storedTones * 300) * 0.05;
+        // Quality Factor (degradation based on hangar type)
+        const degradationCostEUR = (storedTones * 300) * (storageLossPercent / 100);
         elements.res_degradare.textContent = formatEUR(degradationCostEUR);
 
-        // --- Module 4: Technologies (GPS & Demo) ---
+        // --- Module 5: Technologies (GPS & Demo) ---
         const totalInputsEstimEUR = (area * 200) + (area * (fertKgPerHa * 600 / 1000));
-        // 2023+ tech has better GPS/Section control (12% vs 10%)
-        const gpsSavingPercent = (techYear === '2022') ? 0.10 : 0.12;
+        const gpsSavingPercent = techYear >= 2023 ? 0.12 : 0.10;
         const gpsSavingEUR = totalInputsEstimEUR * gpsSavingPercent;
         elements.res_eco_gps.textContent = formatEUR(gpsSavingEUR);
 
         const priceNew = parseFloat(elements.utilaj_nou.value);
-        // Discount factor for demo units
-        const discountFactor = (techYear === '2022') ? 0.75 : 0.80;
+        const discountFactor = techYear >= 2023 ? 0.80 : 0.75;
         const priceDemo = priceNew * discountFactor;
         const demoSavingEUR = priceNew - priceDemo;
         elements.res_eco_demo.textContent = formatEUR(demoSavingEUR);
@@ -150,6 +248,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const score = Math.min(100, Math.round((totalAnnualSavingsEUR / (netInvestmentEUR / 5 + 1)) * 50));
         elements.score_badge.textContent = `Scor: ${score}`;
         elements.score_badge.style.background = score > 70 ? '#4caf50' : '#fbc02d';
+
+        // --- Technology Recommendations ---
+        generateTechRecommendations(area, soilHardness, noTillEnabled);
 
         // --- Dynamic Conclusions ---
         const namesMap = { grau: 'Grâu', porumb: 'Porumb', floare: 'Floarea Soarelui', rapita: 'Rapiță' };
@@ -219,6 +320,55 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     };
 
+    // Technology Recommendations Generator
+    const generateTechRecommendations = (area, soilHardness, noTillEnabled) => {
+        const recommendedHP = Math.ceil(area / 10) * 25;
+        const combineHours = (area / 8).toFixed(1);
+
+        let html = `
+            <div class="conclusion-item">
+                <p><strong>🚜 Tractor Recomandat:</strong></p>
+                <p>Pentru ${area} ha, recomandăm un tractor cu minimum <strong>${recommendedHP} CP</strong> pentru eficiență optimă.</p>
+            </div>
+            <div class="conclusion-item">
+                <p><strong>🌾 Combină:</strong></p>
+                <p>Capacitate necesară: să recolteze suprafața în aproximativ <strong>${combineHours} ore</strong> de lucru efectiv.</p>
+            </div>
+        `;
+
+        if (soilHardness >= 86) {
+            html += `
+                <div class="conclusion-item" style="background: #ffe0e0; border-left: 5px solid #d32f2f;">
+                    <p><strong>⚠️ AVERTISMENT Sol Foarte Tare (${soilHardness}):</strong></p>
+                    <p>Recomandăm <strong>obligatoriu</strong> utilizarea unui <b>Subsolier</b> înainte de No-Till pentru a sparge „colivia de beton" creată de anii de arătură tradițională. Fără aceasta, chiar și semănătoarea No-Till va întâmpina dificultăți.</p>
+                </div>
+            `;
+        }
+
+        if (noTillEnabled || soilHardness >= 70) {
+            html += `
+                <div class="conclusion-item">
+                    <p><strong>🌱 Semănătoare No-Till:</strong></p>
+                    <p>Pentru tehnologia No-Till, recomandăm <b>Agrimerin No-Till</b> cu discuri de tăiere. Este superioară față de ancore sau discuri simple pe sol compactat, asigurând plasarea corectă a seminței.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">💡 <i>No-Till înseamnă semănatul direct sub „plapuma" de paie, păstrând apa în sol și banii în buzunar.</i></p>
+                </div>
+            `;
+        }
+
+        html += `
+            <div class="conclusion-item" style="background: #e8f5e9;">
+                <p><strong>📡 RTK GPS:</strong></p>
+                <p>„Ghidarea laser a tractorului" – Nu mai treceți de două ori pe același loc, economisind timp, motorină și îngrășământ. Rentabilitate în 2-3 sezoane.</p>
+            </div>
+            <div class="conclusion-item" style="background: #fff9e6;">
+                <p><strong>🔄 MTZ vs. Otig:</strong></p>
+                <p>MTZ-ul vă costă ${elements.res_old_consumption.textContent} pe pământ tare; utilajul modern Otig face aceeași treabă cu ${elements.res_new_consumption.textContent} – jumătate din „hrană"!</p>
+            </div>
+        `;
+
+        elements.tech_recommendations.innerHTML = html;
+    };
+
     // 4. Regional Preset Handler
     const updatePresets = () => {
         calculate();
@@ -226,6 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. Event Listeners
     elements.zona.addEventListener('change', updatePresets);
+    elements.soil_hardness.addEventListener('input', calculate);
+    elements.current_equipment.addEventListener('change', calculate);
+    elements.notill_enabled.addEventListener('change', calculate);
+    elements.hangar_type.addEventListener('change', calculate);
 
     // Listen for any crop input change
     document.querySelectorAll('input[name="crop_enabled"]').forEach(cb => {
